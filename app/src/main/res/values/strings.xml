@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WatchList</string>
+    <string name="delete_this_entry">Delete this entry?</string>
+</resources>
