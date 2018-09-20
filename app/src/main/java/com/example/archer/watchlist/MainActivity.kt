@@ -6,9 +6,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.view.GravityCompat
+import android.support.v4.widget.DrawerLayout
+import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -25,22 +29,47 @@ class MainActivity : DialogListener, AppCompatActivity(){
 
     private val mMedia = ArrayList<Media>()
     lateinit var br: MyBroadcastReceiver
+    lateinit var drawer: DrawerLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Standard stuff
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Recycler View setup
         initImageBitmaps()
-
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
-        br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView.adapter as RecyclerViewAdapter)
 
+        // Broadcast Receiver setup
+        br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView.adapter as RecyclerViewAdapter)
         val filter = IntentFilter(OMDB_RESPONSE)
         filter.addAction(DELETE_RECYCLER_ENTRY)
-
         this.registerReceiver(br, filter)
+
+        // Navigation Drawer setup
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        drawer = findViewById(R.id.drawer_layout)
+
+        val toggle = ActionBarDrawerToggle(
+                this,
+                drawer,
+                toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        )
+        drawer.addDrawerListener(toggle)
+        toggle.syncState()
     }
 
+    override fun onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
+    }
     /**
      * Get the current channel's data and add it to mMedia to display once
      * the Recycler View has been initialized
