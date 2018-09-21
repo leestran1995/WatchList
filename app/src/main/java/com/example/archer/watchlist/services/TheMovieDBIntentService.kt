@@ -17,7 +17,7 @@ import java.io.IOException
  * a service on a separate handler thread.
  * helper methods.
  */
-class OmdbIntentService : IntentService("MyIntentService") {
+class TheMovieDBIntentService : IntentService("MyIntentService") {
 
     override fun onHandleIntent(intent: Intent?) {
 
@@ -56,4 +56,4 @@ class OmdbIntentService : IntentService("MyIntentService") {
     }
 }
 
-class OmdbResponse(val Title: String? = null, val Year: String, val Plot: String, val Poster: String)
+class TheMovieDBResponse(val Title: String? = null, val Year: String, val Plot: String, val Poster: String)

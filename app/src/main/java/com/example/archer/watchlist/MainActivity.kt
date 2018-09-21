@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
+import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
@@ -14,6 +15,9 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.SubMenu
 import android.view.View
 import android.widget.Toast
 import com.example.archer.watchlist.constants.API_INVALID_TITLE
@@ -22,8 +26,10 @@ import com.example.archer.watchlist.constants.DELETE_RECYCLER_ENTRY
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
 import com.example.archer.watchlist.dialogs.DeleteDialog
 import com.example.archer.watchlist.dialogs.DialogListener
+import com.example.archer.watchlist.dialogs.NewChannelDialog
 import com.example.archer.watchlist.dialogs.TitleDialog
 import com.example.archer.watchlist.services.OmdbIntentService
+
 
 class MainActivity : DialogListener, AppCompatActivity(){
 
@@ -38,15 +44,18 @@ class MainActivity : DialogListener, AppCompatActivity(){
 
         // Recycler View setup
         initImageBitmaps()
-        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
 
-        // Broadcast Receiver setup
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
         br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView.adapter as RecyclerViewAdapter)
         val filter = IntentFilter(OMDB_RESPONSE)
         filter.addAction(DELETE_RECYCLER_ENTRY)
         this.registerReceiver(br, filter)
 
-        // Navigation Drawer setup
+        //broadcastReceiverSetup()
+        navDrawerSetup()
+    }
+
+    private fun navDrawerSetup() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -61,6 +70,19 @@ class MainActivity : DialogListener, AppCompatActivity(){
         )
         drawer.addDrawerListener(toggle)
         toggle.syncState()
+
+        val navView: NavigationView = findViewById(R.id.nav_view)
+        val menu: Menu = navView.menu
+        val subMenu =  menu.getItem(2).subMenu
+        val createPlaylist = subMenu.getItem(0)
+        createPlaylist.setOnMenuItemClickListener {
+            openNewChannelDialog()
+            return@setOnMenuItemClickListener  true
+        }
+    }
+
+    private fun broadcastReceiverSetup() {
+
     }
 
     override fun onBackPressed() {
@@ -136,13 +158,60 @@ class MainActivity : DialogListener, AppCompatActivity(){
         confirmDialog.show(supportFragmentManager, "delete dialog")
     }
 
+    fun openNewChannelDialog() {
+        Log.d("LEETAG", "Opening new channel dialog")
+        val newChannelDialog = NewChannelDialog()
+        newChannelDialog.show(supportFragmentManager, "new channel dialog")
+    }
+
     /**
      * Called from the TitleDialog window once the user has submitted their title.
      *
      * @param title The title of the media the user is requesting
      */
-    override fun applyText(title: String) {
+    override fun applyNewMediaText(title: String) {
         fetchFromOmdb(title)
+    }
+
+    /**
+     * Called from the NewChannelDialog, adds a new channel to the navigation drawer
+     *
+     * @param name the name of the new channel
+     */
+    override fun applyNewChannelText(name: String) {
+        val navView: NavigationView = findViewById(R.id.nav_view)
+        val subMenu: SubMenu =  navView.menu.getItem(2).subMenu
+
+        // We use titles to index channels so their names cannot be identical
+        if(isChannelNameRepeat(name, subMenu)) {
+            Toast.makeText(this, "Channels cannot share names", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val newItem: MenuItem = subMenu.add(name)
+        newItem.setIcon(R.drawable.ic_playlist_play_black_24dp)
+
+        newItem.setOnMenuItemClickListener {
+            Toast.makeText(this, "wow I'm ${newItem.itemId}", Toast.LENGTH_SHORT).show()
+            Log.d("LEETAG", "item clicked")
+            return@setOnMenuItemClickListener true
+        }
+    }
+
+    /**
+     * Checks to see if any channels in the submenu share a name with the given channel.
+     * Used by applyNewChannelName to reject repeat channel names.
+     *
+     * @param name the name we fcheck for
+     * @param subMenu the subMenu to search through for repeat names
+     */
+    private fun isChannelNameRepeat(name: String, subMenu: SubMenu) : Boolean {
+        for(i in 0 until subMenu.size()) {
+            if (subMenu.getItem(i) != null && subMenu.getItem(i).title == name) {
+                return true
+            }
+        }
+        return false
     }
 
     /**
@@ -170,6 +239,7 @@ class MyBroadcastReceiver(
 ) : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d("LEETAG", "received something")
         if (intent == null) {
             Toast.makeText(mContext, "Error retrieving data from omdb", Toast.LENGTH_SHORT).show()
             return

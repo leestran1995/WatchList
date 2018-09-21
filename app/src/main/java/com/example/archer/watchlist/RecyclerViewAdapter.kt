@@ -23,7 +23,7 @@ import java.util.ArrayList
 
 class RecyclerViewAdapter(
         private val mContext: Context,
-        private var mMedia: ArrayList<Media>
+        var mMedia: ArrayList<Media>
 ) : RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>() {
 
     private val TAG = "LEETAG"  // For debugging

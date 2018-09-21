@@ -13,16 +13,14 @@
     </group>
 
 
-    <item android:title="Communicate">
+    <item
+        android:id="@+id/channel_menu"
+        android:title="Communicate">
         <menu>
             <item
                 android:id="@+id/test1"
-                android:icon="@drawable/ic_camera_alt_black_24dp"
-                android:title="Share" />
-            <item
-                android:id="@+id/test2"
-                android:icon="@drawable/ic_camera_alt_black_24dp"
-                android:title="Send" />
+                android:icon="@drawable/ic_playlist_add_black_24dp"
+                android:title="Add Channel" />
         </menu>
     </item>
 
