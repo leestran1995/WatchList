@@ -45,13 +45,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
         // Recycler View setup
         initImageBitmaps()
 
-        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
-        br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView.adapter as RecyclerViewAdapter)
-        val filter = IntentFilter(OMDB_RESPONSE)
-        filter.addAction(DELETE_RECYCLER_ENTRY)
-        this.registerReceiver(br, filter)
-
-        //broadcastReceiverSetup()
+        broadcastReceiverSetup()
         navDrawerSetup()
     }
 
@@ -82,7 +76,11 @@ class MainActivity : DialogListener, AppCompatActivity(){
     }
 
     private fun broadcastReceiverSetup() {
-
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
+        br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView.adapter as RecyclerViewAdapter)
+        val filter = IntentFilter(OMDB_RESPONSE)
+        filter.addAction(DELETE_RECYCLER_ENTRY)
+        this.registerReceiver(br, filter)
     }
 
     override fun onBackPressed() {

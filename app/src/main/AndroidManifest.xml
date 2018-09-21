@@ -23,7 +23,7 @@
         </activity>
 
 
-
+        <service android:name=".services.OmdbIntentService" />
     </application>
 
 </manifest>

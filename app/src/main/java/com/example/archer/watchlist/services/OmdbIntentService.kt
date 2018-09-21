@@ -25,6 +25,7 @@ class OmdbIntentService : IntentService("MyIntentService") {
         val url = "https://www.omdbapi.com/?apikey=77a591dc&t=" + title
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
+        Log.d("LEETAG", "making request")
         client.newCall(request).enqueue(object: Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.d("LEETAG", "Request to API failed")
@@ -34,6 +35,7 @@ class OmdbIntentService : IntentService("MyIntentService") {
             }
 
             override fun onResponse(call: Call, response: Response) {
+                Log.d("LEETRAN", "response received from API")
                 val body = response?.body()?.string()
                 val gson = GsonBuilder().create()
                 val mediaBody: OmdbResponse = gson.fromJson(body, OmdbResponse::class.java)
