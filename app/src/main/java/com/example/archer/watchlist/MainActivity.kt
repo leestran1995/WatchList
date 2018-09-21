@@ -33,9 +33,11 @@ import com.example.archer.watchlist.services.OmdbIntentService
 
 class MainActivity : DialogListener, AppCompatActivity(){
 
-    private val mMedia = ArrayList<Media>()
+    private var mMedia = ArrayList<Media>()
     lateinit var br: MyBroadcastReceiver
     lateinit var drawer: DrawerLayout
+    private val mChannels = HashMap<String, Channel>()
+    private lateinit var mCurrentChannel: Channel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Standard stuff
@@ -73,6 +75,16 @@ class MainActivity : DialogListener, AppCompatActivity(){
             openNewChannelDialog()
             return@setOnMenuItemClickListener  true
         }
+
+        val defaultMenu: MenuItem = subMenu.add("Default")
+        defaultMenu.setIcon(R.drawable.ic_playlist_play_black_24dp)
+        defaultMenu.isChecked = true
+        defaultMenu.setOnMenuItemClickListener {
+            changeChannel(defaultMenu.title as String)
+            return@setOnMenuItemClickListener true
+        }
+        mChannels["Default"] = Channel("Default", mMedia)
+        mCurrentChannel = mChannels["Default"]!!
     }
 
     private fun broadcastReceiverSetup() {
@@ -104,7 +116,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
 
 
         mMedia.add(testMovie)
-
         initRecyclerView()
     }
 
@@ -186,14 +197,18 @@ class MainActivity : DialogListener, AppCompatActivity(){
             return
         }
 
+        // Navigation Bar
         val newItem: MenuItem = subMenu.add(name)
         newItem.setIcon(R.drawable.ic_playlist_play_black_24dp)
-
         newItem.setOnMenuItemClickListener {
-            Toast.makeText(this, "wow I'm ${newItem.itemId}", Toast.LENGTH_SHORT).show()
-            Log.d("LEETAG", "item clicked")
+            newItem.isChecked = true
+            changeChannel(newItem.title as String)
             return@setOnMenuItemClickListener true
         }
+
+        // Interior Logic
+        mChannels[name] = Channel(name)
+        changeChannel(name)
     }
 
     /**
@@ -210,6 +225,20 @@ class MainActivity : DialogListener, AppCompatActivity(){
             }
         }
         return false
+    }
+
+    private fun changeChannel(name: String) {
+        val newChannel = mChannels[name]
+        if(newChannel == null) {
+            Toast.makeText(this, "Error retrieving channel", Toast.LENGTH_SHORT).show()
+            return
+        }
+        mCurrentChannel = newChannel
+        mMedia = newChannel.media
+        br.mMedia = mMedia
+        initRecyclerView()
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        br.mAdapter = recyclerView.adapter as RecyclerViewAdapter
     }
 
     /**
@@ -232,8 +261,8 @@ class MainActivity : DialogListener, AppCompatActivity(){
 class MyBroadcastReceiver(
         val mContext: Context,
         val mHandler: Handler,
-        val mMedia: ArrayList<Media>,
-        val mAdapter: RecyclerViewAdapter
+        var mMedia: ArrayList<Media>,
+        var mAdapter: RecyclerViewAdapter
 ) : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
