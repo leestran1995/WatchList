@@ -52,6 +52,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
     }
 
     private fun navDrawerSetup() {
+        // Basic Navigation Drawer setup
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -67,6 +68,8 @@ class MainActivity : DialogListener, AppCompatActivity(){
         drawer.addDrawerListener(toggle)
         toggle.syncState()
 
+        // Create channel submenu programmatically
+        // Create playlist button
         val navView: NavigationView = findViewById(R.id.nav_view)
         val menu: Menu = navView.menu
         val subMenu =  menu.getItem(2).subMenu
@@ -76,13 +79,20 @@ class MainActivity : DialogListener, AppCompatActivity(){
             return@setOnMenuItemClickListener  true
         }
 
-        val defaultMenu: MenuItem = subMenu.add("Default")
+        // Default Channel
+        val defaultMenu: MenuItem = subMenu.add(0, subMenu.size(), 0, "Default")
         defaultMenu.setIcon(R.drawable.ic_playlist_play_black_24dp)
         defaultMenu.isChecked = true
+
         defaultMenu.setOnMenuItemClickListener {
+            for (i in  0 until subMenu.size()) {
+                subMenu.getItem(i).isChecked = false
+            }
+            defaultMenu.isChecked = true
             changeChannel(defaultMenu.title as String)
             return@setOnMenuItemClickListener true
         }
+
         mChannels["Default"] = Channel("Default", mMedia)
         mCurrentChannel = mChannels["Default"]!!
     }
@@ -198,13 +208,22 @@ class MainActivity : DialogListener, AppCompatActivity(){
         }
 
         // Navigation Bar
-        val newItem: MenuItem = subMenu.add(name)
+        val newItem: MenuItem = subMenu.add(0, subMenu.size(), 0, name)
         newItem.setIcon(R.drawable.ic_playlist_play_black_24dp)
         newItem.setOnMenuItemClickListener {
+            for (i in  0 until subMenu.size()) {
+                subMenu.getItem(i).isChecked = false
+            }
             newItem.isChecked = true
             changeChannel(newItem.title as String)
             return@setOnMenuItemClickListener true
         }
+
+        // Switch to the new channel right away
+        for (i in  0 until subMenu.size()) {
+            subMenu.getItem(i).isChecked = false
+        }
+        newItem.isChecked = true
 
         // Interior Logic
         mChannels[name] = Channel(name)
@@ -236,8 +255,13 @@ class MainActivity : DialogListener, AppCompatActivity(){
         mCurrentChannel = newChannel
         mMedia = newChannel.media
         br.mMedia = mMedia
+
+        // Just reset the RecyclerView instead of mucking about with its internals
         initRecyclerView()
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+
+        // Have to reset the broadcaster receiver adapter otherwise notifying
+        // the mAdapter of data changes won't work
         br.mAdapter = recyclerView.adapter as RecyclerViewAdapter
     }
 
