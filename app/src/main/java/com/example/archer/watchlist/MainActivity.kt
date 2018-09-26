@@ -50,10 +50,13 @@ class MainActivity : DialogListener, AppCompatActivity(){
     }
 
     private fun startPlayActivity() {
+        if(mCurrentChannel.media.size == 0) {
+            Toast.makeText(this, "Cannot play an empty channel", Toast.LENGTH_SHORT)
+            return
+        }
         val outIntent = Intent(this, PlayActivity::class.java)
         outIntent.putExtra("channel", mCurrentChannel)
         startActivity(outIntent)
-
     }
 
     private fun navDrawerSetup() {

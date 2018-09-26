@@ -7,10 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
-
 import kotlinx.android.synthetic.main.activity_play.*
-import kotlinx.android.synthetic.main.layout_listitem.view.*
-import org.w3c.dom.Text
 import java.util.*
 
 class PlayActivity : AppCompatActivity() {
@@ -19,6 +16,8 @@ class PlayActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play)
         setSupportActionBar(toolbar)
+
+        fab.hide()
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -37,6 +36,7 @@ class PlayActivity : AppCompatActivity() {
         titleView.text = currentMedia.title
         summaryView.text = currentMedia.summary
 
+        supportActionBar?.title = mChannel.title
 
         Glide.with(this)
                 .load(currentMedia.imageLink)
