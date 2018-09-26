@@ -50,6 +50,9 @@ class MainActivity : DialogListener, AppCompatActivity(){
     }
 
     private fun startPlayActivity() {
+        val outIntent = Intent(this, PlayActivity::class.java)
+        outIntent.putExtra("channel", mCurrentChannel)
+        startActivity(outIntent)
 
     }
 

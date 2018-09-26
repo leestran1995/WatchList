@@ -3,4 +3,5 @@
     <string name="delete_this_entry">Delete this entry?</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="title_activity_play">PlayActivity</string>
 </resources>
