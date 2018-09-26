@@ -15,10 +15,8 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.SubMenu
-import android.view.View
+import android.view.*
+import android.widget.Button
 import android.widget.Toast
 import com.example.archer.watchlist.constants.API_INVALID_TITLE
 import com.example.archer.watchlist.constants.API_NO_RESPONSE
@@ -51,12 +49,41 @@ class MainActivity : DialogListener, AppCompatActivity(){
         navDrawerSetup()
     }
 
+    private fun startPlayActivity() {
+
+    }
+
     private fun navDrawerSetup() {
         // Basic Navigation Drawer setup
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
         drawer = findViewById(R.id.drawer_layout)
+
+        // We made the toolbar programmatically so I guess we're gonna make the buttons
+        // programmatically because I didn't learn anything in school.
+        val playButton = Button(this)
+        playButton.setBackgroundResource(R.drawable.play_arrow_white)
+        val playButtonParams = Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT)
+        playButtonParams.gravity = Gravity.RIGHT
+        playButtonParams.rightMargin = 50
+        playButtonParams.width = 75
+        playButtonParams.height = 75
+        playButton.layoutParams = playButtonParams
+        playButton.setOnClickListener {
+            startPlayActivity()
+        }
+        toolbar.addView(playButton)
+
+        val deleteButton = Button(this)
+        deleteButton.setBackgroundResource(R.drawable.delete_white)
+        val deleteButtonParams = Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT)
+        deleteButtonParams.gravity = Gravity.RIGHT
+        deleteButtonParams.rightMargin = 25
+        deleteButtonParams.width = 75
+        deleteButtonParams.height = 75
+        deleteButton.layoutParams = deleteButtonParams
+        toolbar.addView(deleteButton)
 
         val toggle = ActionBarDrawerToggle(
                 this,
