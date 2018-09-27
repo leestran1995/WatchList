@@ -335,9 +335,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
         }
         mCurrentChannel = newChannel
         mMedia = newChannel.media
-        for(media in mMedia) {
-            Log.d("LEETAG", media.title)
-        }
         br.mMedia = mMedia
 
         // Just reset the RecyclerView instead of mucking about with its internals
