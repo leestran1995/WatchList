@@ -98,7 +98,11 @@ class MainActivity : DialogListener, AppCompatActivity(){
             e.printStackTrace()
             Log.d("LEETAG", "Error: Error when writing file")
         }
-        this.unregisterReceiver(br)
+        try {
+            this.unregisterReceiver(br)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         super.onStop()
     }
 
@@ -187,7 +191,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
 
     private fun broadcastReceiverSetup() {
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
-        br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView.adapter as RecyclerViewAdapter)
+        br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView)
         val filter = IntentFilter(OMDB_RESPONSE)
         filter.addAction(DELETE_RECYCLER_ENTRY)
         this.registerReceiver(br, filter)
@@ -267,6 +271,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
      */
     override fun applyNewMediaText(title: String) {
         fetchFromOmdb(title)
+        initRecyclerView()
     }
 
     /**
@@ -343,7 +348,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
 
         // Have to reset the broadcaster receiver adapter otherwise notifying
         // the mAdapter of data changes won't work
-        br.mAdapter = recyclerView.adapter as RecyclerViewAdapter
+        br.mRecyclerView = recyclerView
     }
 
     /**
@@ -367,7 +372,7 @@ class MyBroadcastReceiver(
         val mContext: Context,
         val mHandler: Handler,
         var mMedia: ArrayList<Media>,
-        var mAdapter: RecyclerViewAdapter
+        var mRecyclerView: RecyclerView
 ) : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -401,7 +406,7 @@ class MyBroadcastReceiver(
                 year = intent.getStringExtra("year")
         )
         mMedia.add(newMedia)
-        mAdapter.notifyDataSetChanged()
+        mRecyclerView.adapter?.notifyDataSetChanged()
     }
 }
 
