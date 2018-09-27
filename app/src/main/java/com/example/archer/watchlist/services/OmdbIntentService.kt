@@ -25,7 +25,6 @@ class OmdbIntentService : IntentService("MyIntentService") {
         val url = "https://www.omdbapi.com/?apikey=77a591dc&t=" + title
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
-        Log.d("LEETAG", "making request")
         client.newCall(request).enqueue(object: Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.d("LEETAG", "Request to API failed")

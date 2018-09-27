@@ -27,6 +27,7 @@ import com.example.archer.watchlist.dialogs.DialogListener
 import com.example.archer.watchlist.dialogs.NewChannelDialog
 import com.example.archer.watchlist.dialogs.TitleDialog
 import com.example.archer.watchlist.services.OmdbIntentService
+import java.io.*
 
 
 class MainActivity : DialogListener, AppCompatActivity(){
@@ -34,19 +35,71 @@ class MainActivity : DialogListener, AppCompatActivity(){
     private var mMedia = ArrayList<Media>()
     lateinit var br: MyBroadcastReceiver
     lateinit var drawer: DrawerLayout
-    private val mChannels = HashMap<String, Channel>()
+    private var mChannels = HashMap<String, Channel>()
     private lateinit var mCurrentChannel: Channel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Standard stuff
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        initImageBitmaps()
+        broadcastReceiverSetup()
+
+        getSavedChannels()
 
         // Recycler View setup
-        initImageBitmaps()
-
-        broadcastReceiverSetup()
+        initRecyclerView()
         navDrawerSetup()
+    }
+
+    fun getSavedChannels() {
+        try {
+            val dir: File = filesDir
+            val file = File(dir, "savedChannels.dat")
+            val fis = FileInputStream(file)
+            val ois = ObjectInputStream(fis)
+
+
+            mChannels = ois.readObject() as HashMap<String, Channel>
+            ois.close()
+            fis.close()
+
+            for((key, value) in mChannels) {
+                applyNewChannelText(key, 1)
+            }
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+            Log.d("LEETAG", "Error: File not found")
+        } catch (i: IOException) {
+            Log.d("LEETAG", "Error when reading file")
+        }
+    }
+
+    override fun onResume() {
+        val filter = IntentFilter(OMDB_RESPONSE)
+        filter.addAction(DELETE_RECYCLER_ENTRY)
+        this.registerReceiver(br, filter)
+        super.onResume()
+    }
+    override fun onPause() {
+        this.unregisterReceiver(br)
+        super.onPause()
+    }
+    override fun onStop() {
+        Log.d("LEETAG", "Destroying process, saving files")
+        try {
+            val file = File(filesDir, "savedChannels.dat")
+            val fos = FileOutputStream(file)
+            val oos = ObjectOutputStream(fos)
+            oos.writeObject(mChannels)
+            oos.close()
+            fos.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.d("LEETAG", "Error: Error when writing file")
+        }
+        this.unregisterReceiver(br)
+        super.onStop()
     }
 
     private fun startPlayActivity() {
@@ -113,21 +166,23 @@ class MainActivity : DialogListener, AppCompatActivity(){
         }
 
         // Default Channel
-        val defaultMenu: MenuItem = subMenu.add(0, subMenu.size(), 0, "Default")
-        defaultMenu.setIcon(R.drawable.ic_playlist_play_black_24dp)
-        defaultMenu.isChecked = true
-
-        defaultMenu.setOnMenuItemClickListener {
-            for (i in  0 until subMenu.size()) {
-                subMenu.getItem(i).isChecked = false
-            }
+        if(mChannels.size == 0) {
+            val defaultMenu: MenuItem = subMenu.add(0, subMenu.size(), 0, "Default")
+            defaultMenu.setIcon(R.drawable.ic_playlist_play_black_24dp)
             defaultMenu.isChecked = true
-            changeChannel(defaultMenu.title as String)
-            return@setOnMenuItemClickListener true
-        }
 
-        mChannels["Default"] = Channel("Default", mMedia)
-        mCurrentChannel = mChannels["Default"]!!
+            defaultMenu.setOnMenuItemClickListener {
+                for (i in 0 until subMenu.size()) {
+                    subMenu.getItem(i).isChecked = false
+                }
+                defaultMenu.isChecked = true
+                changeChannel(defaultMenu.title as String)
+                return@setOnMenuItemClickListener true
+            }
+
+            mChannels["Default"] = Channel("Default", mMedia)
+            mCurrentChannel = mChannels["Default"]!!
+        }
     }
 
     private fun broadcastReceiverSetup() {
@@ -150,15 +205,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
      * the Recycler View has been initialized
      */
     fun initImageBitmaps() {
-
-        val testMovie = Media(
-                "PLACEHOLDER",
-                "https://upload.wikimedia.org/wikipedia/commons/f/ff/Wikipedia_logo_593.jpg",
-                "It's wikipedia what more do you want from meIt's wikipedia what more do you want from me"
-        )
-
-
-        mMedia.add(testMovie)
         initRecyclerView()
     }
 
@@ -170,6 +216,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
         val adapter = RecyclerViewAdapter(this, mMedia)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter.notifyDataSetChanged()
     }
 
     /**
@@ -179,7 +226,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
      * @param title The title of the media the service should fetch
      */
     fun fetchFromOmdb(title: String) {
-        Log.d("LEETAG", "fetching $title from omdb")
         val intent = Intent(this, OmdbIntentService::class.java)
         intent.putExtra("title", title)
         startService(intent)
@@ -202,7 +248,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
      * @param position the position of the ViewHolder in the mMedia ArrayList
      */
     fun openDeleteMediaDialog(position: Int) {
-        Log.d("LEETAG", "Opening delete media dialog")
         val args: Bundle = Bundle()
         args.putInt("position", position)
         val confirmDialog = DeleteDialog()
@@ -211,7 +256,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
     }
 
     fun openNewChannelDialog() {
-        Log.d("LEETAG", "Opening new channel dialog")
         val newChannelDialog = NewChannelDialog()
         newChannelDialog.show(supportFragmentManager, "new channel dialog")
     }
@@ -229,8 +273,10 @@ class MainActivity : DialogListener, AppCompatActivity(){
      * Called from the NewChannelDialog, adds a new channel to the navigation drawer
      *
      * @param name the name of the new channel
+     * @param status used to indicate whether we need to add the new channels to
+     *              mChannels. defaults to 0
      */
-    override fun applyNewChannelText(name: String) {
+    override fun applyNewChannelText(name: String, status: Int) {
         val navView: NavigationView = findViewById(R.id.nav_view)
         val subMenu: SubMenu =  navView.menu.getItem(2).subMenu
 
@@ -259,7 +305,9 @@ class MainActivity : DialogListener, AppCompatActivity(){
         newItem.isChecked = true
 
         // Interior Logic
-        mChannels[name] = Channel(name)
+        if(status == 0) {
+            mChannels[name] = Channel(name)
+        }
         changeChannel(name)
     }
 
@@ -287,6 +335,9 @@ class MainActivity : DialogListener, AppCompatActivity(){
         }
         mCurrentChannel = newChannel
         mMedia = newChannel.media
+        for(media in mMedia) {
+            Log.d("LEETAG", media.title)
+        }
         br.mMedia = mMedia
 
         // Just reset the RecyclerView instead of mucking about with its internals
@@ -323,7 +374,6 @@ class MyBroadcastReceiver(
 ) : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.d("LEETAG", "received something")
         if (intent == null) {
             Toast.makeText(mContext, "Error retrieving data from omdb", Toast.LENGTH_SHORT).show()
             return
