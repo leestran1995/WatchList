@@ -12,6 +12,8 @@ import java.util.*
 
 class PlayActivity : AppCompatActivity() {
 
+    lateinit var mChannel: Channel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play)
@@ -24,13 +26,18 @@ class PlayActivity : AppCompatActivity() {
                     .setAction("Action", null).show()
         }
 
-        val mChannel = intent.getSerializableExtra("channel") as Channel
+        mChannel = intent.getSerializableExtra("channel") as Channel
 
+        displayCurrentMedia()
+        displayClockView()
+    }
+
+    fun displayCurrentMedia() {
         val titleView: TextView = findViewById(R.id.play_title)
         val imageView: ImageView = findViewById(R.id.play_image)
         val summaryView: TextView = findViewById(R.id.play_summary)
 
-        val randomNum = Random()
+        val randomNum = Random(mChannel.currentSeed.toLong())
         val currentMedia: Media = mChannel.media[randomNum.nextInt(mChannel.media.size)]
 
         titleView.text = currentMedia.title
@@ -41,11 +48,12 @@ class PlayActivity : AppCompatActivity() {
         Glide.with(this)
                 .load(currentMedia.imageLink)
                 .into(imageView)
+    }
 
+    fun displayClockView() {
         val clockView: TextView = findViewById(R.id.textClock)
         clockView.setOnClickListener {
             Toast.makeText(this, "Programming changes every 20 minutes", Toast.LENGTH_SHORT).show()
         }
     }
-
 }
