@@ -9,6 +9,6 @@ data class Channel(val title: String, var media: ArrayList<Media> = ArrayList<Me
     init {
         // We don't want all initial seeds to be the same
         val gen = Random()
-        currentSeed = gen.nextInt(100)
+        currentSeed = gen.nextInt(1000)
     }
 }

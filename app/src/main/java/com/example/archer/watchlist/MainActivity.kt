@@ -22,10 +22,7 @@ import com.example.archer.watchlist.constants.API_INVALID_TITLE
 import com.example.archer.watchlist.constants.API_NO_RESPONSE
 import com.example.archer.watchlist.constants.DELETE_RECYCLER_ENTRY
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
-import com.example.archer.watchlist.dialogs.DeleteDialog
-import com.example.archer.watchlist.dialogs.DialogListener
-import com.example.archer.watchlist.dialogs.NewChannelDialog
-import com.example.archer.watchlist.dialogs.TitleDialog
+import com.example.archer.watchlist.dialogs.*
 import com.example.archer.watchlist.services.OmdbIntentService
 import java.io.*
 
@@ -42,20 +39,31 @@ class MainActivity : DialogListener, AppCompatActivity(){
         // Standard stuff
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        initImageBitmaps()
+
+        /*
+         * The order here is important. We make the RecyclerView first since the
+         * Broadcast Receiver needs the RecyclerView. Then we get the saved channels
+         * (if they exist) and re-initialize the Recycler View to reflect the newly
+         * loaded channels.
+         */
+        initRecyclerView()
         broadcastReceiverSetup()
 
         getSavedChannels()
 
         // Recycler View setup
         initRecyclerView()
+        toolbarSetup()
         navDrawerSetup()
     }
 
+    /**
+     * Get the users saved channels if they exist. If they don't the user will
+     * only see the Default Channel when the app is opened.
+     */
     fun getSavedChannels() {
         try {
-            val dir: File = filesDir
-            val file = File(dir, "savedChannels.dat")
+            val file = File(filesDir, "savedChannels.dat")
             val fis = FileInputStream(file)
             val ois = ObjectInputStream(fis)
 
@@ -87,6 +95,21 @@ class MainActivity : DialogListener, AppCompatActivity(){
     }
     override fun onStop() {
         Log.d("LEETAG", "Destroying process, saving files")
+        saveChannelsToFile()
+
+        try {
+            this.unregisterReceiver(br)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        super.onStop()
+    }
+
+    /**
+     * When the app is closed/killed, save all of the user's channels to their device
+     * to be retrieved the next time they open the app.
+     */
+    fun saveChannelsToFile() {
         try {
             val file = File(filesDir, "savedChannels.dat")
             val fos = FileOutputStream(file)
@@ -98,14 +121,12 @@ class MainActivity : DialogListener, AppCompatActivity(){
             e.printStackTrace()
             Log.d("LEETAG", "Error: Error when writing file")
         }
-        try {
-            this.unregisterReceiver(br)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        super.onStop()
     }
 
+    /**
+     * Pass an intent to the Play Activity, which shows the user whatever is "on"
+     * when they start the play activity.
+     */
     private fun startPlayActivity() {
         if(mCurrentChannel.media.size == 0) {
             Toast.makeText(this, "Cannot play an empty channel", Toast.LENGTH_SHORT)
@@ -116,7 +137,11 @@ class MainActivity : DialogListener, AppCompatActivity(){
         startActivity(outIntent)
     }
 
-    private fun navDrawerSetup() {
+    /**
+     * Set up the toolbar programmatically, adding the "play" and "delete" buttons,
+     * in addition the the hamburger button that will open the navigation drawer.
+     */
+    private fun toolbarSetup() {
         // Basic Navigation Drawer setup
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -146,6 +171,9 @@ class MainActivity : DialogListener, AppCompatActivity(){
         deleteButtonParams.width = 75
         deleteButtonParams.height = 75
         deleteButton.layoutParams = deleteButtonParams
+        deleteButton.setOnClickListener {
+            openDeleteChannelDialog()
+        }
         toolbar.addView(deleteButton)
 
         val toggle = ActionBarDrawerToggle(
@@ -157,6 +185,14 @@ class MainActivity : DialogListener, AppCompatActivity(){
         )
         drawer.addDrawerListener(toggle)
         toggle.syncState()
+    }
+
+
+    /**
+     * Initialize the navigation drawer, adding a Default channel if there are no channels
+     * in the app yet.
+     */
+    private fun navDrawerSetup() {
 
         // Create channel submenu programmatically
         // Create playlist button
@@ -169,12 +205,13 @@ class MainActivity : DialogListener, AppCompatActivity(){
             return@setOnMenuItemClickListener  true
         }
 
-        // Default Channel
+        // Default Channel if no channels exist yet
         if(mChannels.size == 0) {
             val defaultMenu: MenuItem = subMenu.add(0, subMenu.size(), 0, "Default")
             defaultMenu.setIcon(R.drawable.ic_playlist_play_black_24dp)
             defaultMenu.isChecked = true
 
+            // Mark a channel as active and change to that channel when it is clicked
             defaultMenu.setOnMenuItemClickListener {
                 for (i in 0 until subMenu.size()) {
                     subMenu.getItem(i).isChecked = false
@@ -189,6 +226,9 @@ class MainActivity : DialogListener, AppCompatActivity(){
         }
     }
 
+    /**
+     * Set up the Broadcast Receiver which handles responses from the Omdb service
+     */
     private fun broadcastReceiverSetup() {
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
         br = MyBroadcastReceiver(this, Handler(), mMedia, recyclerView)
@@ -203,13 +243,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
         } else {
             super.onBackPressed()
         }
-    }
-    /**
-     * Get the current channel's data and add it to mMedia to display once
-     * the Recycler View has been initialized
-     */
-    fun initImageBitmaps() {
-        initRecyclerView()
     }
 
     /**
@@ -252,16 +285,47 @@ class MainActivity : DialogListener, AppCompatActivity(){
      * @param position the position of the ViewHolder in the mMedia ArrayList
      */
     fun openDeleteMediaDialog(position: Int) {
-        val args: Bundle = Bundle()
+        val args = Bundle()
         args.putInt("position", position)
         val confirmDialog = DeleteDialog()
         confirmDialog.arguments = args
         confirmDialog.show(supportFragmentManager, "delete dialog")
     }
-
+    private fun openDeleteChannelDialog() {
+        val args = Bundle()
+        args.putString("title", mCurrentChannel.title)
+        val confirmDialog = DeleteChannelDialog()
+        confirmDialog.arguments = args
+        confirmDialog.show(supportFragmentManager, "delete channel dialog")
+    }
     fun openNewChannelDialog() {
         val newChannelDialog = NewChannelDialog()
         newChannelDialog.show(supportFragmentManager, "new channel dialog")
+    }
+
+    override fun removeChannel(title: String?) {
+        mChannels.remove(title)
+        var newTitle = ""
+        for((key, value) in mChannels) {
+            newTitle = key
+            break
+        }
+
+        val navView: NavigationView = findViewById(R.id.nav_view)
+        val menu: Menu = navView.menu
+        val subMenu =  menu.getItem(2).subMenu
+
+        // Hopefully the fact that we don't actually delete the channel from
+        // the navigation drawer doesn't cause any issues
+        for(i in 0 until subMenu.size()) {
+            val tempItem = subMenu.getItem(i)
+            if (tempItem.title == title) {
+                tempItem.isVisible = false
+            }
+        }
+
+        changeChannel(newTitle)
+
     }
 
     /**
@@ -303,6 +367,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
             return@setOnMenuItemClickListener true
         }
 
+
         // Switch to the new channel right away
         for (i in  0 until subMenu.size()) {
             subMenu.getItem(i).isChecked = false
@@ -332,6 +397,11 @@ class MainActivity : DialogListener, AppCompatActivity(){
         return false
     }
 
+    /**
+     * Change from the current channel and reflect the changes in the app.
+     *
+     * @param name The title of the new channel to switch to
+     */
     private fun changeChannel(name: String) {
         val newChannel = mChannels[name]
         if(newChannel == null) {
@@ -341,6 +411,9 @@ class MainActivity : DialogListener, AppCompatActivity(){
         mCurrentChannel = newChannel
         mMedia = newChannel.media
         br.mMedia = mMedia
+
+        supportActionBar?.title = newChannel.title
+
 
         // Just reset the RecyclerView instead of mucking about with its internals
         initRecyclerView()
