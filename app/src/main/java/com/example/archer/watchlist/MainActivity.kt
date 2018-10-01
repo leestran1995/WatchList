@@ -414,7 +414,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
 
         supportActionBar?.title = newChannel.title
 
-
         // Just reset the RecyclerView instead of mucking about with its internals
         initRecyclerView()
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
