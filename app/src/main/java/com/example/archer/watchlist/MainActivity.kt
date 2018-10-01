@@ -24,6 +24,7 @@ import com.example.archer.watchlist.constants.DELETE_RECYCLER_ENTRY
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
 import com.example.archer.watchlist.dialogs.*
 import com.example.archer.watchlist.services.OmdbIntentService
+import com.google.android.gms.ads.MobileAds
 import java.io.*
 
 

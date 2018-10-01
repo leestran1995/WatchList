@@ -7,18 +7,63 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.reward.RewardItem
+import com.google.android.gms.ads.reward.RewardedVideoAd
+import com.google.android.gms.ads.reward.RewardedVideoAdListener
 import kotlinx.android.synthetic.main.activity_play.*
 import java.util.*
 
-class PlayActivity : AppCompatActivity() {
+class PlayActivity : AppCompatActivity(), RewardedVideoAdListener {
+    override fun onRewarded(reward: RewardItem) {
+        advanceProgramming()
+    }
+
+    override fun onRewardedVideoAdLeftApplication() {
+        Toast.makeText(this, "onRewardedVideoAdLeftApplication", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onRewardedVideoAdClosed() {
+        loadRewardedVideoAd()
+    }
+
+    override fun onRewardedVideoAdFailedToLoad(errorCode: Int) {
+        Toast.makeText(this, "Ad failed to load", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onRewardedVideoAdLoaded() {
+
+    }
+
+    override fun onRewardedVideoAdOpened() {
+    }
+
+    override fun onRewardedVideoStarted() {
+    }
+
+    override fun onRewardedVideoCompleted() {
+    }
+
 
     lateinit var mChannel: Channel
     val mHandler: Handler = Handler()
+    lateinit var mRewardedVideoAd: RewardedVideoAd
+
+    fun loadRewardedVideoAd() {
+        mRewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917",
+                AdRequest.Builder().build())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play)
         setSupportActionBar(toolbar)
+
+        MobileAds.initialize(this, "ca-app-pub-3940256099942544/5224354917")
+        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this)
+        mRewardedVideoAd.rewardedVideoAdListener = this
+        loadRewardedVideoAd()
 
         fab.hide()  // Can't figure out how to get rid of this icon otherwise
 
@@ -62,7 +107,9 @@ class PlayActivity : AppCompatActivity() {
         val clockView: TextView = findViewById(R.id.textClock)
         clockView.setOnClickListener {
             Toast.makeText(this, "Programming changes every 20 minutes", Toast.LENGTH_SHORT).show()
-            advanceProgramming()
+            if(mRewardedVideoAd.isLoaded) {
+                mRewardedVideoAd.show()
+            }
         }
     }
 
