@@ -7,6 +7,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.example.archer.watchlist.dialogs.ConfirmAdDialog
+import com.example.archer.watchlist.dialogs.PlayDialogListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.reward.RewardItem
@@ -15,7 +17,15 @@ import com.google.android.gms.ads.reward.RewardedVideoAdListener
 import kotlinx.android.synthetic.main.activity_play.*
 import java.util.*
 
-class PlayActivity : AppCompatActivity(), RewardedVideoAdListener {
+class PlayActivity : AppCompatActivity(), RewardedVideoAdListener, PlayDialogListener {
+    override fun handleAdDialog(b: Boolean) {
+        if (b) {
+            if(mRewardedVideoAd.isLoaded) {
+                mRewardedVideoAd.show()
+            }
+        }
+    }
+
     override fun onRewarded(reward: RewardItem) {
         advanceProgramming()
     }
@@ -106,11 +116,13 @@ class PlayActivity : AppCompatActivity(), RewardedVideoAdListener {
     private fun displayClockView() {
         val clockView: TextView = findViewById(R.id.textClock)
         clockView.setOnClickListener {
-            Toast.makeText(this, "Programming changes every 20 minutes", Toast.LENGTH_SHORT).show()
-            if(mRewardedVideoAd.isLoaded) {
-                mRewardedVideoAd.show()
-            }
+            openConfirmAdDialog()
         }
+    }
+
+    private fun openConfirmAdDialog() {
+        val confirmDiag = ConfirmAdDialog()
+        confirmDiag.show(supportFragmentManager, "confirm ad dialog")
     }
 
     fun advanceProgramming() {

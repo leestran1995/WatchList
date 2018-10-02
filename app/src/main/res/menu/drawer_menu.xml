@@ -4,18 +4,16 @@
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
-        <item android:id="@+id/nav_message"
-            android:icon ="@drawable/ic_message"
-            android:title="Message"/>
-        <item android:id="@+id/nav_image"
-            android:icon ="@drawable/ic_camera_alt_black_24dp"
-            android:title="Camera"/>
+        <item
+            android:id="@+id/nav_help"
+            android:icon="@drawable/ic_help_black_24dp"
+            android:title="Help" />
     </group>
 
 
     <item
         android:id="@+id/channel_menu"
-        android:title="Communicate">
+        android:title="Channels">
         <menu>
             <item
                 android:id="@+id/test1"

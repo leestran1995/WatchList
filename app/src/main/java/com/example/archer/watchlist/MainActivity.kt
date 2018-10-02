@@ -24,7 +24,6 @@ import com.example.archer.watchlist.constants.DELETE_RECYCLER_ENTRY
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
 import com.example.archer.watchlist.dialogs.*
 import com.example.archer.watchlist.services.OmdbIntentService
-import com.google.android.gms.ads.MobileAds
 import java.io.*
 
 
@@ -35,6 +34,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
     lateinit var drawer: DrawerLayout
     private var mChannels = HashMap<String, Channel>()
     private lateinit var mCurrentChannel: Channel
+    private val channelSubmenuIndex: Int = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Standard stuff
@@ -56,6 +56,29 @@ class MainActivity : DialogListener, AppCompatActivity(){
         initRecyclerView()
         toolbarSetup()
         navDrawerSetup()
+    }
+
+
+    override fun onResume() {
+        val filter = IntentFilter(OMDB_RESPONSE)
+        filter.addAction(DELETE_RECYCLER_ENTRY)
+        this.registerReceiver(br, filter)
+        super.onResume()
+    }
+    override fun onPause() {
+        this.unregisterReceiver(br)
+        super.onPause()
+    }
+    override fun onStop() {
+        Log.d("LEETAG", "Destroying process, saving files")
+        saveChannelsToFile()
+
+        try {
+            this.unregisterReceiver(br)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        super.onStop()
     }
 
     /**
@@ -83,29 +106,6 @@ class MainActivity : DialogListener, AppCompatActivity(){
             Log.d("LEETAG", "Error when reading file")
         }
     }
-
-    override fun onResume() {
-        val filter = IntentFilter(OMDB_RESPONSE)
-        filter.addAction(DELETE_RECYCLER_ENTRY)
-        this.registerReceiver(br, filter)
-        super.onResume()
-    }
-    override fun onPause() {
-        this.unregisterReceiver(br)
-        super.onPause()
-    }
-    override fun onStop() {
-        Log.d("LEETAG", "Destroying process, saving files")
-        saveChannelsToFile()
-
-        try {
-            this.unregisterReceiver(br)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        super.onStop()
-    }
-
     /**
      * When the app is closed/killed, save all of the user's channels to their device
      * to be retrieved the next time they open the app.
@@ -113,7 +113,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
     fun saveChannelsToFile() {
         try {
             val file = File(filesDir, "savedChannels.dat")
-            val fos = FileOutputStream(file)
+            val fos = FileOutputStream(file, false)
             val oos = ObjectOutputStream(fos)
             oos.writeObject(mChannels)
             oos.close()
@@ -199,7 +199,15 @@ class MainActivity : DialogListener, AppCompatActivity(){
         // Create playlist button
         val navView: NavigationView = findViewById(R.id.nav_view)
         val menu: Menu = navView.menu
-        val subMenu =  menu.getItem(2).subMenu
+
+        val helpMenu = menu.getItem(0)
+        //val helpButton = helpMenu.getItem(0)
+        helpMenu.setOnMenuItemClickListener {
+            openHelpDialog()
+            return@setOnMenuItemClickListener true
+        }
+
+        val subMenu =  menu.getItem(1).subMenu
         val createPlaylist = subMenu.getItem(0)
         createPlaylist.setOnMenuItemClickListener {
             openNewChannelDialog()
@@ -226,6 +234,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
             mCurrentChannel = mChannels["Default"]!!
         }
     }
+
 
     /**
      * Set up the Broadcast Receiver which handles responses from the Omdb service
@@ -279,6 +288,10 @@ class MainActivity : DialogListener, AppCompatActivity(){
         inputDialog.show(supportFragmentManager, "input dialog")
     }
 
+    private fun openHelpDialog() {
+        val helpDialog = HelpDialog()
+        helpDialog.show(supportFragmentManager, "help dialog")
+    }
     /**
      * Ask the user for confirmation before deleting an entry from the Recycler View.
      * Called from the ViewHolder
@@ -314,7 +327,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
 
         val navView: NavigationView = findViewById(R.id.nav_view)
         val menu: Menu = navView.menu
-        val subMenu =  menu.getItem(2).subMenu
+        val subMenu =  menu.getItem(channelSubmenuIndex).subMenu
 
         // Hopefully the fact that we don't actually delete the channel from
         // the navigation drawer doesn't cause any issues
@@ -348,7 +361,7 @@ class MainActivity : DialogListener, AppCompatActivity(){
      */
     override fun applyNewChannelText(name: String, status: Int) {
         val navView: NavigationView = findViewById(R.id.nav_view)
-        val subMenu: SubMenu =  navView.menu.getItem(2).subMenu
+        val subMenu: SubMenu =  navView.menu.getItem(channelSubmenuIndex).subMenu
 
         // We use titles to index channels so their names cannot be identical
         if(isChannelNameRepeat(name, subMenu)) {
