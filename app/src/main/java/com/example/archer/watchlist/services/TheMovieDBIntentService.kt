@@ -17,7 +17,7 @@ import java.io.IOException
  * a service on a separate handler thread.
  * helper methods.
  */
-class OmdbIntentService : IntentService("MyIntentService") {
+class TheMovieDBIntentService : IntentService("MyIntentService") {
 
     override fun onHandleIntent(intent: Intent?) {
 
@@ -34,7 +34,6 @@ class OmdbIntentService : IntentService("MyIntentService") {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                Log.d("LEETRAN", "response received from API")
                 val body = response?.body()?.string()
                 val gson = GsonBuilder().create()
                 val mediaBody: OmdbResponse = gson.fromJson(body, OmdbResponse::class.java)
@@ -57,4 +56,4 @@ class OmdbIntentService : IntentService("MyIntentService") {
     }
 }
 
-class OmdbResponse(val Title: String? = null, val Year: String, val Plot: String, val Poster: String)
+class TheMovieDBResponse(val Title: String? = null, val Year: String, val Plot: String, val Poster: String)

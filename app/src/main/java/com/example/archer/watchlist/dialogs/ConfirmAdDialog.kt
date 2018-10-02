@@ -10,23 +10,20 @@ import android.view.View
 import android.widget.EditText
 import com.example.archer.watchlist.R
 
-class TitleDialog : AppCompatDialogFragment() {
+class ConfirmAdDialog : AppCompatDialogFragment() {
     var inputText: EditText? = null
-    var listener: DialogListener? = null
+    var listener: PlayDialogListener? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
         val inflater: LayoutInflater? = activity?.layoutInflater
-        val view: View? = inflater?.inflate(R.layout.layout_dialog, null)
+        val view: View? = inflater?.inflate(R.layout.layout_dialog_ad, null)
         builder.setView(view)
-                .setNegativeButton("Cancel") { dialog, whichButton ->
+                .setNegativeButton("No") { dialog, whichButton ->
 
                 }
-                .setPositiveButton("Submit") { dialog, whichButton ->
-                    val inputTitle: String? = inputText?.text.toString()
-                    if (inputTitle != null) {
-                        listener?.applyNewMediaText(inputTitle)
-                    }
+                .setPositiveButton("Yes") { dialog, whichButton ->
+                    listener?.handleAdDialog(true)
                 }
         inputText = view?.findViewById(R.id.edit_media_input)
         return builder.create()
@@ -34,7 +31,11 @@ class TitleDialog : AppCompatDialogFragment() {
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        listener = context as DialogListener
+        listener = context as PlayDialogListener
     }
 
+}
+
+interface PlayDialogListener {
+    fun handleAdDialog(b: Boolean)
 }

@@ -10,14 +10,14 @@ import android.view.View
 import android.widget.EditText
 import com.example.archer.watchlist.R
 
-class TitleDialog : AppCompatDialogFragment() {
+class NewChannelDialog : AppCompatDialogFragment() {
     var inputText: EditText? = null
     var listener: DialogListener? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
         val inflater: LayoutInflater? = activity?.layoutInflater
-        val view: View? = inflater?.inflate(R.layout.layout_dialog, null)
+        val view: View? = inflater?.inflate(R.layout.layout_dialog_new_channel, null)
         builder.setView(view)
                 .setNegativeButton("Cancel") { dialog, whichButton ->
 
@@ -25,7 +25,7 @@ class TitleDialog : AppCompatDialogFragment() {
                 .setPositiveButton("Submit") { dialog, whichButton ->
                     val inputTitle: String? = inputText?.text.toString()
                     if (inputTitle != null) {
-                        listener?.applyNewMediaText(inputTitle)
+                        listener?.applyNewChannelText(inputTitle)
                     }
                 }
         inputText = view?.findViewById(R.id.edit_media_input)

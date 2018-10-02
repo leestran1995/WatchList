@@ -23,10 +23,8 @@ import java.util.ArrayList
 
 class RecyclerViewAdapter(
         private val mContext: Context,
-        private var mMedia: ArrayList<Media>
+        var mMedia: ArrayList<Media>
 ) : RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>() {
-
-    private val TAG = "LEETAG"  // For debugging
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_listitem, parent, false)
