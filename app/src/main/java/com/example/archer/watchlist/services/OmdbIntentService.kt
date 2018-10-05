@@ -3,15 +3,14 @@ package com.example.archer.watchlist.services
 import android.app.IntentService
 import android.content.Intent
 import android.util.Log
-import com.example.archer.watchlist.Media
 import com.example.archer.watchlist.constants.API_GOOD_RESPONSE
 import com.example.archer.watchlist.constants.API_INVALID_TITLE
 import com.example.archer.watchlist.constants.API_NO_RESPONSE
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
+import com.example.archer.watchlist.dataclasses.OmdbSearchResponse
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
-import java.io.Serializable
 
 
 /**
@@ -56,10 +55,5 @@ class OmdbIntentService : IntentService("MyIntentService") {
     }
 }
 
-class OmdbResponse(val Title: String? = null, val Year: String, val Plot: String, val Poster: String)
-
-class OmdbSearchResponse(val Search: ArrayList<MediaResponse>, val Response: String) : Serializable
-
 //class SearchResponse(val mediaResponse: ArrayList<MediaResponse>) : Serializable
 
-class MediaResponse(val Title: String, val Year: String, val imdbId: String, val Poster: String) : Serializable

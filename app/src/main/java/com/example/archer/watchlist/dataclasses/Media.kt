@@ -1,4 +1,4 @@
-package com.example.archer.watchlist
+package com.example.archer.watchlist.dataclasses
 
 import java.io.Serializable
 

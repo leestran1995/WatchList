@@ -10,10 +10,9 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
-import com.example.archer.watchlist.Media
+import com.example.archer.watchlist.dataclasses.Media
 import com.example.archer.watchlist.R
 import com.example.archer.watchlist.SearchRecyclerViewAdapter
-import com.example.archer.watchlist.services.OmdbSearchResponse
 
 class SearchDialog : AppCompatDialogFragment() {
     var inputText: EditText? = null

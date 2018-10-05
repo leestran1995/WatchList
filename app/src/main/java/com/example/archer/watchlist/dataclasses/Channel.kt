@@ -1,7 +1,5 @@
-package com.example.archer.watchlist
+package com.example.archer.watchlist.dataclasses
 
-import android.os.Parcelable
-import android.util.Log
 import java.io.Serializable
 import java.util.*
 

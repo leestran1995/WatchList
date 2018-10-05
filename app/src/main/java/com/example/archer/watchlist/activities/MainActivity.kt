@@ -1,4 +1,4 @@
-package com.example.archer.watchlist
+package com.example.archer.watchlist.activities
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -18,13 +18,17 @@ import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.Toast
+import com.example.archer.watchlist.R
+import com.example.archer.watchlist.RecyclerViewAdapter
 import com.example.archer.watchlist.constants.API_INVALID_TITLE
 import com.example.archer.watchlist.constants.API_NO_RESPONSE
 import com.example.archer.watchlist.constants.DELETE_RECYCLER_ENTRY
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
+import com.example.archer.watchlist.dataclasses.Channel
+import com.example.archer.watchlist.dataclasses.Media
 import com.example.archer.watchlist.dialogs.*
 import com.example.archer.watchlist.services.OmdbIntentService
-import com.example.archer.watchlist.services.OmdbSearchResponse
+import com.example.archer.watchlist.dataclasses.OmdbSearchResponse
 import java.io.*
 
 

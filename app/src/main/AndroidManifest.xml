@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +27,7 @@
         <service android:name=".services.OmdbIntentService" />
 
         <activity
-            android:name=".PlayActivity"
+            android:name=".activities.PlayActivity"
             android:label="@string/title_activity_play"
             android:theme="@style/AppTheme"></activity>
     </application>
