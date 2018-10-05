@@ -11,6 +11,7 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.archer.watchlist.activities.MainActivity
 import com.example.archer.watchlist.dataclasses.Media
+import com.example.archer.watchlist.dialogs.SearchDialog
 
 import java.util.ArrayList
 
@@ -19,10 +20,11 @@ import java.util.ArrayList
  * Created by User on 1/1/2018.
  */
 
-class RecyclerViewAdapter(
+class SearchRecyclerViewAdapter(
         private val mContext: Context,
-        var mMedia: ArrayList<Media>
-) : RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>() {
+        var mMedia: ArrayList<Media>,
+        var mDialog: SearchDialog
+        ) : RecyclerView.Adapter<SearchRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_listitem, parent, false)
@@ -38,10 +40,10 @@ class RecyclerViewAdapter(
         holder.mediaTitle.text = mMedia[position].title
         holder.mediaSummary.text = mMedia[position].summary
 
-        holder.itemView.setOnLongClickListener {
+        holder.itemView.setOnClickListener() {
             val instance = mContext as MainActivity
-            instance.openDeleteMediaDialog(position)
-            return@setOnLongClickListener true
+            instance.addMedia(mMedia[position])
+            mDialog.dismiss()
         }
     }
 

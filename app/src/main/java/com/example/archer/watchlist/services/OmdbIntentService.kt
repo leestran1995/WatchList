@@ -7,6 +7,7 @@ import com.example.archer.watchlist.constants.API_GOOD_RESPONSE
 import com.example.archer.watchlist.constants.API_INVALID_TITLE
 import com.example.archer.watchlist.constants.API_NO_RESPONSE
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
+import com.example.archer.watchlist.dataclasses.OmdbSearchResponse
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
@@ -22,7 +23,7 @@ class OmdbIntentService : IntentService("MyIntentService") {
     override fun onHandleIntent(intent: Intent?) {
 
         val title: String? = intent?.getStringExtra("title")
-        val url = "https://www.omdbapi.com/?apikey=77a591dc&t=" + title
+        val url = "https://www.omdbapi.com/?apikey=77a591dc&s=" + title
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
         client.newCall(request).enqueue(object: Callback {
@@ -37,19 +38,16 @@ class OmdbIntentService : IntentService("MyIntentService") {
                 Log.d("LEETRAN", "response received from API")
                 val body = response?.body()?.string()
                 val gson = GsonBuilder().create()
-                val mediaBody: OmdbResponse = gson.fromJson(body, OmdbResponse::class.java)
+                val searchBody: OmdbSearchResponse = gson.fromJson(body, OmdbSearchResponse::class.java)
                 val outgoingIntent = Intent(OMDB_RESPONSE)
 
-                if(mediaBody.Title == null) {
+                if(searchBody.Response == "False") {
                     outgoingIntent.putExtra("status", API_INVALID_TITLE)
                 } else {
                     outgoingIntent.putExtra("status", API_GOOD_RESPONSE)
                 }
 
-                outgoingIntent.putExtra("title", mediaBody.Title)
-                outgoingIntent.putExtra("year", mediaBody.Year)
-                outgoingIntent.putExtra("plot", mediaBody.Plot)
-                outgoingIntent.putExtra("imageUrl", mediaBody.Poster)
+                outgoingIntent.putExtra("searchResponse", searchBody)
                 sendBroadcast(outgoingIntent)
             }
 
@@ -57,4 +55,5 @@ class OmdbIntentService : IntentService("MyIntentService") {
     }
 }
 
-class OmdbResponse(val Title: String? = null, val Year: String, val Plot: String, val Poster: String)
+//class SearchResponse(val mediaResponse: ArrayList<MediaResponse>) : Serializable
+

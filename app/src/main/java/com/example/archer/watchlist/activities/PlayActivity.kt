@@ -1,4 +1,4 @@
-package com.example.archer.watchlist
+package com.example.archer.watchlist.activities
 
 import android.os.Bundle
 import android.os.Handler
@@ -7,6 +7,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.example.archer.watchlist.R
+import com.example.archer.watchlist.dataclasses.Channel
+import com.example.archer.watchlist.dataclasses.Media
 import com.example.archer.watchlist.dialogs.ConfirmAdDialog
 import com.example.archer.watchlist.dialogs.PlayDialogListener
 import com.google.android.gms.ads.AdRequest

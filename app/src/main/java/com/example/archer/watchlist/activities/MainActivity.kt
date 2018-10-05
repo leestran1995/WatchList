@@ -1,4 +1,4 @@
-package com.example.archer.watchlist
+package com.example.archer.watchlist.activities
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -18,12 +18,17 @@ import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.Toast
+import com.example.archer.watchlist.R
+import com.example.archer.watchlist.RecyclerViewAdapter
 import com.example.archer.watchlist.constants.API_INVALID_TITLE
 import com.example.archer.watchlist.constants.API_NO_RESPONSE
 import com.example.archer.watchlist.constants.DELETE_RECYCLER_ENTRY
 import com.example.archer.watchlist.constants.OMDB_RESPONSE
+import com.example.archer.watchlist.dataclasses.Channel
+import com.example.archer.watchlist.dataclasses.Media
 import com.example.archer.watchlist.dialogs.*
 import com.example.archer.watchlist.services.OmdbIntentService
+import com.example.archer.watchlist.dataclasses.OmdbSearchResponse
 import java.io.*
 
 
@@ -445,7 +450,15 @@ class MainActivity : DialogListener, AppCompatActivity(){
      */
     override fun removeItem(position: Int) {
         mMedia.removeAt(position)
-        val recyclerView : RecyclerView = findViewById(R.id.recyclerView)
+        notifyAdapter()
+    }
+
+    fun addMedia(newMedia: Media) {
+        mMedia.add(newMedia)
+        notifyAdapter()
+    }
+    fun notifyAdapter() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.adapter?.notifyDataSetChanged()
     }
 }
@@ -484,6 +497,10 @@ class MyBroadcastReceiver(
                 return}
         }
 
+        /*
+         * Deprecated
+         *
+         *
         // else
         val newMedia = Media(
                 title = intent.getStringExtra("title"),
@@ -493,6 +510,31 @@ class MyBroadcastReceiver(
         )
         mMedia.add(newMedia)
         mRecyclerView.adapter?.notifyDataSetChanged()
+        */
+
+        val searchResponse = intent.getSerializableExtra("searchResponse") as OmdbSearchResponse
+        val searchMediaList: ArrayList<Media> = parseSearchResponse(searchResponse)
+        openSearchDialogWindow(context, searchMediaList)
+    }
+
+    private fun parseSearchResponse(searchResponse: OmdbSearchResponse): ArrayList<Media> {
+        val newList: ArrayList<Media> = ArrayList<Media>()
+        for(item in searchResponse.Search) {
+            Log.d("LEETAG", item.Title)
+            val newMedia = Media(item.Title, item.Poster, summary = item.Year, year = item.Year)
+            newList.add(newMedia)
+        }
+        return newList
+    }
+
+    private fun openSearchDialogWindow(context: Context?, searchMediaList: ArrayList<Media>) {
+
+        val searchDialog = SearchDialog()
+        val arg: Bundle = Bundle()
+        arg.putSerializable("searchResponse", searchMediaList)
+        searchDialog.arguments = arg
+
+        searchDialog.show((context as MainActivity).supportFragmentManager, "search Dialog")
     }
 }
 
