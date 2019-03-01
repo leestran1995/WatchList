@@ -18,6 +18,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.Toast
+//import android.widget.Toolbar
 import com.example.archer.watchlist.R
 import com.example.archer.watchlist.RecyclerViewAdapter
 import com.example.archer.watchlist.constants.API_INVALID_TITLE
@@ -30,6 +31,7 @@ import com.example.archer.watchlist.dialogs.*
 import com.example.archer.watchlist.services.OmdbIntentService
 import com.example.archer.watchlist.dataclasses.OmdbSearchResponse
 import java.io.*
+import java.util.*
 
 
 class MainActivity : DialogListener, AppCompatActivity(){
@@ -440,6 +442,11 @@ class MainActivity : DialogListener, AppCompatActivity(){
         // Have to reset the broadcaster receiver adapter otherwise notifying
         // the mAdapter of data changes won't work
         br.mRecyclerView = recyclerView
+
+        if(::drawer.isInitialized && drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START)
+        }
+
     }
 
     /**
